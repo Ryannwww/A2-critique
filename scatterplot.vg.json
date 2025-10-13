@@ -1,0 +1,68 @@
+{
+  "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
+  "title": "Incidence vs Mortality by Cancer Type (Persons, All ages, 2025)",
+  "width": 860,
+  "height": 520,
+  "data": {
+    "url": "incident_to_mortality.csv"
+  },
+  "transform": [
+    {"filter": "datum.Sex === 'Persons'"},
+    {"filter": "datum.Age_group === 'All ages combined'"},
+    {"filter": "datum.Year == 2025"},
+    {
+      "calculate": "toNumber(replace(datum['Incident_count'], ',', ''))",
+      "as": "incidents"
+    },
+    {
+      "calculate": "toNumber(replace(datum['Mortality_counts'], ',', ''))",
+      "as": "deaths"
+    },
+    {
+      "calculate": "toNumber(datum['Age-specific incident rate\\n(cases per 100,000)'])",
+      "as": "inc_rate"
+    },
+    {
+      "calculate": "toNumber(datum['Age-specific mortality rate\\n(cases per 100,000)'])",
+      "as": "mort_rate"
+    }
+  ],
+  "mark": {"type": "circle", "tooltip": true, "opacity": 0.8},
+  "encoding": {
+    "x": {
+      "field": "inc_rate",
+      "type": "quantitative",
+      "title": "Age-specific incidence rate (per 100,000)",
+      "scale": {"nice": true}
+    },
+    "y": {
+      "field": "mort_rate",
+      "type": "quantitative",
+      "title": "Age-specific mortality rate (per 100,000)",
+      "scale": {"nice": true}
+    },
+    "size": {
+      "field": "incidents",
+      "type": "quantitative",
+      "title": "Incident cases",
+      "legend": {"orient": "right"}
+    },
+    "color": {
+      "field": "Cancer_types",
+      "type": "nominal",
+      "title": "Cancer type",
+      "legend": {"columns": 1}
+    },
+    "tooltip": [
+      {"field": "Cancer_types", "type": "nominal", "title": "Cancer"},
+      {"field": "incidents", "type": "quantitative", "title": "Incidents"},
+      {"field": "deaths", "type": "quantitative", "title": "Deaths"},
+      {"field": "inc_rate", "type": "quantitative", "title": "Incidence rate"},
+      {"field": "mort_rate", "type": "quantitative", "title": "Mortality rate"}
+    ]
+  },
+  "config": {
+    "view": {"stroke": null},
+    "axis": {"grid": true}
+  }
+}
