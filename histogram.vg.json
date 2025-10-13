@@ -1,0 +1,46 @@
+{
+  "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
+  "title": "Age-specific Cancer Incidence Rate by Age Group (Persons All cancers combined 2024)",
+  "width": 860,
+  "height": 420,
+  "data": { "url": "cancer_agegroups.csv" },
+
+  "transform": [
+    { "calculate": "toNumber(datum.Year)", "as": "Year_num" },
+    { "calculate": "trim(datum.Sex)", "as": "Sex_clean" },
+    { "calculate": "trim(datum['Cancer group/site'])", "as": "Cancer_clean" },
+    { "calculate": "trim(datum['Age group (years)'])", "as": "Age_group" },
+    { "calculate": "toNumber(replace(datum['Count'], ',', ''))", "as": "Count_num" },
+    { "calculate": "toNumber(datum['Age-specific rate\\n(cases per 100,000)'])", "as": "Rate" },
+    {
+      "filter": "datum.Year_num == 2024 && datum.Sex_clean === 'Persons' && datum.Cancer_clean === 'All cancers combined'"
+    }
+  ],
+
+  "mark": "bar",
+
+  "encoding": {
+    "x": {
+      "field": "Age_group",
+      "type": "ordinal",
+      "title": "Age group (years)",
+      "sort": "ascending"
+    },
+    "y": {
+      "field": "Rate",
+      "type": "quantitative",
+      "title": "Age-specific rate (per 100,000)"
+    },
+    "tooltip": [
+      { "field": "Age_group", "title": "Age group" },
+      { "field": "Rate", "type": "quantitative", "title": "Rate (per 100,000)" },
+      { "field": "Count_num", "type": "quantitative", "title": "Count" }
+    ]
+  },
+
+  "config": {
+    "axis": { "labelFontSize": 11, "titleFontSize": 12 },
+    "title": { "fontSize": 16 },
+    "view": { "stroke": null }
+  }
+}
