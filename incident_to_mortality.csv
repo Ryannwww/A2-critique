@@ -1,0 +1,18 @@
+﻿Cancer_types,Year,Sex,Age_group,Incident_count,"Age-specific incident rate
+(cases per 100,000)",Mortality_counts,"Age-specific mortality rate
+(cases per 100,000)",
+Prostate cancer,2025,Persons,All ages combined,"28,868",104.4,"3,975",14.4,
+Breast cancer,2025,Persons,All ages combined,"20,336",73.5,"3,353",12.1,
+Melanoma of the skin,2025,Persons,All ages combined,"17,443",63.1,"1,455",5.3,
+Lung cancer,2025,Persons,All ages combined,"15,108",54.6,"8,994",32.5,
+Colon cancer,2025,Persons,All ages combined,"10,401",37.6,"1,239",4.5,
+Kidney cancer,2025,Persons,All ages combined,"4,868",17.6,"1,005",3.6,
+Pancreatic cancer,2025,Persons,All ages combined,"4,825",17.4,"4,039",14.6,
+Thyroid cancer,2025,Persons,All ages combined,"4,355",15.7,179,0.6,
+Colorectal cancer,2025,Persons,All ages combined,"14,784",53.4,"2,523",18.1,
+Hodgkin lymphoma,2025,Persons,All ages combined,839,3.0,81,0.3,
+Uterine cancer,2025,Persons,All ages combined,"3,493",12.6,706,2.6,
+Bladder cancer,2025,Persons,All ages combined,"3,345",12.1,"1,156",4.2,
+Stomach cancer,2025,Persons,All ages combined,"2,740",9.9,"1,187",4.3,
+Unknown primary site (cancer of),2025,Persons,All ages combined,"2,633",9.5,"2,933",10.6,
+Liver cancer,2025,Males,All ages combined,"2,250",16.4,"2,632",9.5,
