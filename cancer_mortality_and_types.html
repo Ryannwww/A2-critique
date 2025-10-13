@@ -2,7 +2,7 @@
 <html>
 <head>
   <meta charset="utf-8" />
-  <title>AU Cancer Mortality Choropleth + Top 10 Bar + Bubble</title>
+  <title>AU Cancer Mortality Choropleth + Top 10 Bar + Bubble + Histogram</title>
   <link href="https://fonts.googleapis.com/css2?family=Alegreya:ital,wght@0,400..900;1,400..900&family=Roboto:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="styles.css">
   <script src="https://cdn.jsdelivr.net/npm/vega@5"></script>
@@ -18,7 +18,7 @@
 </head>
 <body>
   <div class="wrap">
-    <h2>Cancer Mortality (ASR per 100,000) — Australia by State</h2>
+    <h2>Cancer Mortality (ASR per 100,000) Australia by State</h2>
     <div id="visMap" class="viz"></div>
     <p>Use the slider to compare ASR across years (2010 to 2020). Darker shades indicate higher rates.</p>
     <p>ASR is age-standardised to the 2024 Australian population, per 100,000.</p>
@@ -31,10 +31,14 @@
     <h2>Incidence vs Mortality by Cancer Type (Persons, All ages, 2025)</h2>
     <div id="visBubble" class="viz"></div>
     <p>Each bubble is a cancer type. Position shows age-specific incidence vs mortality rate; bubble size shows incident cases.</p>
+
+    <h2>Age-specific Cancer Incidence Rate by Age Group (Persons All cancers combined 2024)</h2>
+    <div id="visHist" class="viz"></div>
+    <p>Bars show the incidence rate per 100,000 for each age group. If you see no bars, ensure the CSV filename and columns match.</p>
   </div>
 
   <script>
-    // Choropleth 
+    /* -- Choropleth (unchanged)*/
     const mapSpec = {
       "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
       "title": {"text": "Cancer Mortality in Australia by State"},
@@ -67,9 +71,7 @@
                 },
                 "key": "state",
                 "fields": [
-                  "year",
-                  "sex",
-                  "deaths count",
+                  "year","sex","deaths count",
                   "Age-standardised rate\n2024 Australian population \n(per 100,000"
                 ]
               }
@@ -94,11 +96,7 @@
                 "domain": [180, 190, 200, 210, 220, 230, 260],
                 "range": ["#fdbe85", "#fd8d3c", "#e6550d", "#a63603"]
               },
-              "legend": {
-                "title": "Age-standardised rate(per 100,000)",
-                "titleFontSize": 10,
-                "labelFontSize": 8
-              }
+              "legend": { "title": "Age-standardised rate(per 100,000)", "titleFontSize": 10, "labelFontSize": 8 }
             },
             "tooltip": [
               {"field": "properties.STE_NAME21", "type": "nominal", "title": "State/Territory"},
@@ -111,7 +109,7 @@
       ]
     };
 
-    //Top 15 Bar 
+    /*Top 15 Bar (unchanged) */
     const barSpec = {
       "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
       "title": {"text": "Top 15 Cancer Types by Incidence (Totals)"},
@@ -123,8 +121,7 @@
       },
       "params": [
         {
-          "name": "MinCases",
-          "value": 0,
+          "name": "MinCases","value": 0,
           "bind": {"input": "range","min": 0,"max": 30000,"step": 1000,"name": "Minimum cases: "}
         }
       ],
@@ -149,18 +146,17 @@
       "config": { "axis": {"labelFontSize": 11, "titleFontSize": 12}, "title": {"fontSize": 16}, "numberFormat": "," }
     };
 
+    /*  Bubble */
     const bubbleSpec = {
       "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
       "title": {"text": "Incidence vs Mortality by Cancer Type (Persons, All ages, 2025)"},
-      "width": 860,
-      "height": 520,
-      "data": { "url": "incident_to_mortality.csv" },  
+      "width": 860, "height": 520,
+      "data": { "url": "incident_to_mortality.csv" },
       "transform": [
         { "calculate": "toNumber(datum.Year)", "as": "Year_num" },
         { "filter": "datum.Year_num == 2025" },
         { "filter": "datum.Sex === 'Persons'" },
         { "filter": "datum.Age_group === 'All ages combined'" },
-
         {
           "calculate":
             "isValid(datum['Cancer_types']) ? trim(datum['Cancer_types']+'') : " +
@@ -168,25 +164,17 @@
             "isValid(datum['Cancer types']) ? trim(datum['Cancer types']+'') : ''",
           "as": "Cancer"
         },
-
         { "calculate": "toNumber(replace(datum['Incident_count'], ',', ''))", "as": "incidents" },
         { "calculate": "toNumber(replace(datum['Mortality_counts'], ',', ''))", "as": "deaths" },
         { "calculate": "toNumber(datum['Age-specific incident rate\\n(cases per 100,000)'])", "as": "inc_rate" },
         { "calculate": "toNumber(datum['Age-specific mortality rate\\n(cases per 100,000)'])", "as": "mort_rate" },
-
         { "filter": "isValid(datum.inc_rate) && isValid(datum.mort_rate) && datum.Cancer !== ''" }
       ],
       "mark": { "type": "circle", "opacity": 0.8, "tooltip": true },
       "encoding": {
         "x": { "field": "inc_rate", "type": "quantitative", "title": "Age-specific incidence rate (per 100,000)", "scale": {"nice": true} },
         "y": { "field": "mort_rate", "type": "quantitative", "title": "Age-specific mortality rate (per 100,000)", "scale": {"nice": true} },
-        "size": {
-          "field": "incidents",
-          "type": "quantitative",
-          "title": "Incident cases",
-          "legend": {"orient": "right"},
-          "scale": { "type": "sqrt", "range": [30, 1500] }   
-        },
+        "size": { "field": "incidents", "type": "quantitative", "title": "Incident cases", "legend": { "orient": "right" }, "scale": {"type": "threshold","domain": [500, 1000, 2000, 5000, 8000, 11000, 14000, 17000, 20000, 23000, 26000],"range": [10, 50, 150, 200, 300, 400]} },
         "color": { "field": "Cancer", "type": "nominal", "title": "Cancer type" },
         "tooltip": [
           { "field": "Cancer", "type": "nominal", "title": "Cancer" },
@@ -199,12 +187,42 @@
       "config": { "view": { "stroke": null }, "axis": { "grid": true } }
     };
 
- 
+    /*Histogram  */
+    const histSpec = {
+      "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
+      "title": "Age-specific Cancer Incidence Rate by Age Group (Persons All cancers combined 2024)",
+      "width": 860, "height": 420,
+      "data": { "url": "cancer_agegroups.csv", "format": {"type": "csv"} },
+      "transform": [
+        { "calculate": "toNumber(datum['Year'])", "as": "Year_num" },
+        { "calculate": "trim(datum['Sex'] || datum[' Sex'] || datum['\\uFEFFSex'])", "as": "Sex_clean" },
+        { "calculate": "trim(datum['Cancer group/site'] || datum[' Cancer group/site'] || datum['\\uFEFFCancer group/site'])", "as": "Cancer_clean" },
+        { "calculate": "trim(datum['Age group (years)'])", "as": "Age_group" },
+        { "calculate": "replace((datum['Count']||'')+'', /,/g, '')", "as": "Count_str" },
+        { "calculate": "toNumber(datum.Count_str)", "as": "Count_num" },
+        { "calculate": "replace((datum['Age-specific rate\\n(cases per 100,000)']||'')+'', /[^0-9.]+/g, '')", "as": "Rate_str" },
+        { "calculate": "toNumber(datum.Rate_str)", "as": "Rate" },
+        { "filter": "datum.Year_num == 2024 && test(/Persons/i, datum.Sex_clean) && test(/All cancers combined/i, datum.Cancer_clean)" },
+        { "filter": "isFinite(datum.Rate)" }
+      ],
+      "mark": "bar",
+      "encoding": {
+        "x": { "field": "Age_group", "type": "ordinal", "title": "Age group (years)", "sort": "ascending" },
+        "y": { "field": "Rate", "type": "quantitative", "title": "Age-specific rate (per 100,000)" },
+        "tooltip": [
+          { "field": "Age_group", "title": "Age group" },
+          { "field": "Rate", "type": "quantitative", "title": "Rate (per 100,000)" },
+          { "field": "Count_num", "type": "quantitative", "title": "Count" }
+        ]
+      },
+      "config": { "axis": { "labelFontSize": 11, "titleFontSize": 12 }, "title": { "fontSize": 16 }, "view": { "stroke": null } }
+    };
+
     vegaEmbed("#visMap", mapSpec, {mode: "vega-lite"}).catch(console.error);
     vegaEmbed("#visBar", barSpec, {mode: "vega-lite"}).catch(console.error);
     vegaEmbed("#visBubble", bubbleSpec, {mode: "vega-lite"}).catch(console.error);
+    vegaEmbed("#visHist", histSpec, {mode: "vega-lite"}).catch(console.error);
   </script>
 </body>
 </html>
-
 
