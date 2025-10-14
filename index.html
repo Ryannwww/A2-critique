@@ -13,28 +13,49 @@
     .wrap { max-width: 1100px; margin-inline: auto; }
     .viz { margin: 20px 0 24px; }
     .viz + h2 { margin-top: 72px; }
+      h1 {
+          font-family: "Alegreya", serif;
+          font-size: 42px;
+          font-weight: 700;
+          color: #1a1a1a;
+          text-align: center;
+          margin-top: 10px;
+          margin-bottom: 12px;
+         }
+
+      p.intro {
+          font-size: 18px;
+          line-height: 1.7;
+          color: #444;
+          text-align: center;
+          max-width: 900px;
+          margin-inline: auto;
+          margin-bottom: 40px;
+          }
     h2 { margin: 0 0 8px; }
   </style>
 </head>
 <body>
   <div class="wrap">
+    <h1>Cancer across Australia<h1>
+    <p class='intro'> Cancer can be detrimental, you can explore facts about cancer down below about types and prevalent cancer types in Australia. <p>
     <h2>Cancer Mortality (ASR per 100,000) Australia by State</h2>
     <div id="visMap" class="viz"></div>
     <p>Use the slider to compare ASR across years (2010 to 2020). Darker shades indicate higher rates.</p>
     <p>ASR is age-standardised to the 2024 Australian population, per 100,000.</p>
 
-    <h2>Top 15 Cancer Types by Incidence (Totals)</h2>
+    <h2>Top 15 Cancer Types by Incidence</h2>
     <div id="visBar" class="viz"></div>
     <p>Use the slider to increase the total number of cases, to see the difference in cases between cancer types</p>
     <p>Prostate cancer has the most confirmed cases in the year 2021 followed by breast cancer</p>
 
-    <h2>Incidence vs Mortality by Cancer Type (Persons, All ages, 2025)</h2>
-    <div id="visBubble" class="viz"></div>
-    <p>Each bubble is a cancer type. Position shows age-specific incidence vs mortality rate; bubble size shows incident cases.</p>
-
     <h2>Age-specific Cancer Incidence Rate by Age Group (Persons All cancers combined 2024)</h2>
     <div id="visHist" class="viz"></div>
-    <p>Bars show the incidence rate per 100,000 for each age group. If you see no bars, ensure the CSV filename and columns match.</p>
+    <p>Bars show the incidence rate per 100,000 for each age group.</p>
+
+    <h2>Incidence vs Mortality by Cancer Type (Persons, All ages, 2025)</h2>
+    <div id="visBubble" class="viz"></div>
+    <p>For the top 15 cancers displayed in the bar chart above, this bubble chart illustrates the mortality rate per 100000 against incident rate per 100000. Each bubble is a cancer type. Position shows age-specific incidence vs mortality rate; bubble size shows incident cases.</p>
   </div>
 
   <script>
@@ -137,13 +158,46 @@
       "mark": "bar",
       "encoding": {
         "y": { "field": "label", "type": "nominal", "title": "Cancer type", "sort": "-x" },
-        "x": { "field": "cases_num", "type": "quantitative", "title": "Total cases", "scale": {"domainMin": 0} },
+        "x": { "field": "cases_num", "type": "quantitative", "title": "Total cases", "scale": {"domainMin": 0}, "axis":{"format": ",", "labelFontSize": 11, "titleFontSize": 12} },
         "tooltip": [
           {"field": "label", "title": "Cancer type"},
           {"field": "cases_num", "type": "quantitative", "title": "Cases"}
         ]
       },
       "config": { "axis": {"labelFontSize": 11, "titleFontSize": 12}, "title": {"fontSize": 16}, "numberFormat": "," }
+    };
+
+
+
+  /*Histogram  */
+    const histSpec = {
+      "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
+      "title": "Age-specific Cancer Incidence Rate by Age Group (Persons All cancers combined 2024)",
+      "width": 860, "height": 420,
+      "data": { "url": "cancer_agegroups.csv", "format": {"type": "csv"} },
+      "transform": [
+        { "calculate": "toNumber(datum['Year'])", "as": "Year_num" },
+        { "calculate": "trim(datum['Sex'] || datum[' Sex'] || datum['\\uFEFFSex'])", "as": "Sex_clean" },
+        { "calculate": "trim(datum['Cancer group/site'] || datum[' Cancer group/site'] || datum['\\uFEFFCancer group/site'])", "as": "Cancer_clean" },
+        { "calculate": "trim(datum['Age group (years)'])", "as": "Age_group" },
+        { "calculate": "replace((datum['Count']||'')+'', /,/g, '')", "as": "Count_str" },
+        { "calculate": "toNumber(datum.Count_str)", "as": "Count_num" },
+        { "calculate": "replace((datum['Age-specific rate\\n(cases per 100,000)']||'')+'', /[^0-9.]+/g, '')", "as": "Rate_str" },
+        { "calculate": "toNumber(datum.Rate_str)", "as": "Rate" },
+        { "filter": "datum.Year_num == 2024 && test(/Persons/i, datum.Sex_clean) && test(/All cancers combined/i, datum.Cancer_clean)" },
+        { "filter": "isFinite(datum.Rate)" }
+      ],
+      "mark": "bar",
+      "encoding": {
+        "x": { "field": "Age_group", "type": "ordinal", "title": "Age group (years)", "sort": "ascending" },
+        "y": { "field": "Rate", "type": "quantitative", "title": "Age-specific rate (per 100,000)" },
+        "tooltip": [
+          { "field": "Age_group", "title": "Age group" },
+          { "field": "Rate", "type": "quantitative", "title": "Rate (per 100,000)" },
+          { "field": "Count_num", "type": "quantitative", "title": "Count" }
+        ]
+      },
+      "config": { "axis": { "labelFontSize": 11, "titleFontSize": 12 }, "title": { "fontSize": 16 }, "view": { "stroke": null } }
     };
 
     /*  Bubble */
@@ -187,41 +241,12 @@
       "config": { "view": { "stroke": null }, "axis": { "grid": true } }
     };
 
-    /*Histogram  */
-    const histSpec = {
-      "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
-      "title": "Age-specific Cancer Incidence Rate by Age Group (Persons All cancers combined 2024)",
-      "width": 860, "height": 420,
-      "data": { "url": "cancer_agegroups.csv", "format": {"type": "csv"} },
-      "transform": [
-        { "calculate": "toNumber(datum['Year'])", "as": "Year_num" },
-        { "calculate": "trim(datum['Sex'] || datum[' Sex'] || datum['\\uFEFFSex'])", "as": "Sex_clean" },
-        { "calculate": "trim(datum['Cancer group/site'] || datum[' Cancer group/site'] || datum['\\uFEFFCancer group/site'])", "as": "Cancer_clean" },
-        { "calculate": "trim(datum['Age group (years)'])", "as": "Age_group" },
-        { "calculate": "replace((datum['Count']||'')+'', /,/g, '')", "as": "Count_str" },
-        { "calculate": "toNumber(datum.Count_str)", "as": "Count_num" },
-        { "calculate": "replace((datum['Age-specific rate\\n(cases per 100,000)']||'')+'', /[^0-9.]+/g, '')", "as": "Rate_str" },
-        { "calculate": "toNumber(datum.Rate_str)", "as": "Rate" },
-        { "filter": "datum.Year_num == 2024 && test(/Persons/i, datum.Sex_clean) && test(/All cancers combined/i, datum.Cancer_clean)" },
-        { "filter": "isFinite(datum.Rate)" }
-      ],
-      "mark": "bar",
-      "encoding": {
-        "x": { "field": "Age_group", "type": "ordinal", "title": "Age group (years)", "sort": "ascending" },
-        "y": { "field": "Rate", "type": "quantitative", "title": "Age-specific rate (per 100,000)" },
-        "tooltip": [
-          { "field": "Age_group", "title": "Age group" },
-          { "field": "Rate", "type": "quantitative", "title": "Rate (per 100,000)" },
-          { "field": "Count_num", "type": "quantitative", "title": "Count" }
-        ]
-      },
-      "config": { "axis": { "labelFontSize": 11, "titleFontSize": 12 }, "title": { "fontSize": 16 }, "view": { "stroke": null } }
-    };
+    
 
     vegaEmbed("#visMap", mapSpec, {mode: "vega-lite"}).catch(console.error);
     vegaEmbed("#visBar", barSpec, {mode: "vega-lite"}).catch(console.error);
-    vegaEmbed("#visBubble", bubbleSpec, {mode: "vega-lite"}).catch(console.error);
     vegaEmbed("#visHist", histSpec, {mode: "vega-lite"}).catch(console.error);
+    vegaEmbed("#visBubble", bubbleSpec, {mode: "vega-lite"}).catch(console.error);
   </script>
 </body>
 </html>
