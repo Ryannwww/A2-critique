@@ -3,18 +3,28 @@
   "title": "Age-specific Cancer Incidence Rate by Age Group (Persons All cancers combined 2024)",
   "width": 860,
   "height": 420,
-  "data": { "url": "cancer_agegroups.csv" },
+  "data": { "url": "cancer_agegroups.csv", "format": {"type": "csv"} },
 
   "transform": [
-    { "calculate": "toNumber(datum.Year)", "as": "Year_num" },
-    { "calculate": "trim(datum.Sex)", "as": "Sex_clean" },
-    { "calculate": "trim(datum['Cancer group/site'])", "as": "Cancer_clean" },
+    { "calculate": "toNumber(datum['Year'])", "as": "Year_num" },
+
+    { "calculate": "trim(datum['Sex'] || datum[' Sex'] || datum['\\uFEFFSex'])", "as": "Sex_clean" },
+    { "calculate": "trim(datum['Cancer group/site'] || datum[' Cancer group/site'] || datum['\\uFEFFCancer group/site'])", "as": "Cancer_clean" },
     { "calculate": "trim(datum['Age group (years)'])", "as": "Age_group" },
-    { "calculate": "toNumber(replace(datum['Count'], ',', ''))", "as": "Count_num" },
-    { "calculate": "toNumber(datum['Age-specific rate\\n(cases per 100,000)'])", "as": "Rate" },
+
+    { "calculate": "replace(datum['Count']+'', /,/g, '')", "as": "Count_str" },
+    { "calculate": "toNumber(datum.Count_str)", "as": "Count_num" },
+
     {
-      "filter": "datum.Year_num == 2024 && datum.Sex_clean === 'Persons' && datum.Cancer_clean === 'All cancers combined'"
-    }
+      "calculate": "replace((datum['Age-specific rate\\n(cases per 100,000)']||'')+'', /[^0-9.]+/g, '')",
+      "as": "Rate_str"
+    },
+    { "calculate": "toNumber(datum.Rate_str)", "as": "Rate" },
+
+    {
+      "filter": "datum.Year_num == 2024 && test(/Persons/i, datum.Sex_clean) && test(/All cancers combined/i, datum.Cancer_clean)"
+    },
+    { "filter": "isFinite(datum.Rate)" }
   ],
 
   "mark": "bar",
@@ -32,6 +42,8 @@
       "title": "Age-specific rate (per 100,000)"
     },
     "tooltip": [
+      { "field": "Cancer_clean", "title": "Cancer group" },
+      { "field": "Sex_clean", "title": "Sex" },
       { "field": "Age_group", "title": "Age group" },
       { "field": "Rate", "type": "quantitative", "title": "Rate (per 100,000)" },
       { "field": "Count_num", "type": "quantitative", "title": "Count" }

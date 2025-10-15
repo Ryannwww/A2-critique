@@ -1,0 +1,54 @@
+{
+  "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
+  "title": {
+    "text": "What Causes Cancer? — Share of Attributable Cases",
+    "fontSize": 18,
+    "anchor": "start",
+    "offset": 12
+  },
+  "width": 420,
+  "height": 420,
+  "data": { "url": "cancer_causes.csv", "format": { "type": "csv" } },
+
+  "transform": [
+    {
+      "calculate": "trim((datum['Causes']||datum['\\uFEFFCauses']||datum[' Causes']||datum['Cause']||'')+'')",
+      "as": "cause"
+    },
+    {
+      "calculate": "replace((datum['Contribute']||datum['\\uFEFFContribute']||datum[' Contribute']||datum['Percent']||datum['Value']||'')+'', /[^0-9.]+/g, '')",
+      "as": "val_str"
+    },
+    { "calculate": "toNumber(datum.val_str)", "as": "value" },
+    { "filter": "datum.cause !== '' && isFinite(datum.value)" }
+  ],
+
+  "layer": [
+    {
+      "mark": { "type": "arc", "outerRadius": 250, "innerRadius": 110, "tooltip": true },
+      "encoding": {
+        "theta": { "field": "value", "type": "quantitative", "stack": "normalize" },
+        "color": {
+          "field": "cause",
+          "type": "nominal",
+          "title": "Cause",
+          "scale": { "scheme": "tableau10" }
+        },
+        "tooltip": [
+          { "field": "cause", "title": "Cause" },
+          { "field": "value", "type": "quantitative", "title": "Share (%)", "format": ".0f" }
+        ]
+      }
+    },
+    {
+      "mark": { "type": "text", "radius": 120, "fontSize": 11 },
+      "encoding": {
+        "theta": { "field": "value", "type": "quantitative", "stack": "normalize" },
+        "text": { "field": "value", "type": "quantitative", "format": ".0f" },
+        "color": { "value": "black" }
+      }
+    }
+  ],
+
+  "config": { "view": { "stroke": null } }
+}
