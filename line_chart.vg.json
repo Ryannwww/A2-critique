@@ -1,0 +1,49 @@
+{
+  "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
+  "title": {
+    "text": "Number of New Cancer Cases in Australia (2000–2020)",
+    "fontSize": 18,
+    "anchor": "start",
+    "offset": 12
+  },
+  "width": 860,
+  "height": 420,
+  "data": { "url": "case_changing.csv", "format": { "type": "csv" } },
+
+  "transform": [
+    { "calculate": "trim((datum['Year']||datum['\\uFEFFYear']||datum[' Year']||'')+'')", "as": "Year_str" },
+    { "calculate": "toNumber(datum.Year_str)", "as": "Year_num" },
+    {
+      "calculate": "replace((datum['Number of new cases']||datum['\\uFEFFNumber of new cases']||datum[' Number of new cases']||datum['Cases']||datum['Count']||'')+'', /[^0-9.\\-]+/g, '')",
+      "as": "Cases_str"
+    },
+    { "calculate": "toNumber(datum.Cases_str)", "as": "Cases" },
+    { "filter": "isFinite(datum.Year_num) && isFinite(datum.Cases)" }
+  ],
+
+  "mark": { "type": "line", "point": true, "strokeWidth": 3, "color": "#1f77b4" },
+
+  "encoding": {
+    "x": {
+      "field": "Year_num",
+      "type": "quantitative",
+      "title": "Year",
+      "axis": { "format": "d", "labelAngle": 0 }
+    },
+    "y": {
+      "field": "Cases",
+      "type": "quantitative",
+      "title": "Number of New Cases",
+      "axis": { "format": "," }
+    },
+    "tooltip": [
+      { "field": "Year_num", "type": "quantitative", "title": "Year", "format": "d" },
+      { "field": "Cases", "type": "quantitative", "title": "New Cases", "format": "," }
+    ]
+  },
+
+  "config": {
+    "view": { "stroke": null },
+    "axis": { "labelFontSize": 11, "titleFontSize": 12 }
+  }
+}
