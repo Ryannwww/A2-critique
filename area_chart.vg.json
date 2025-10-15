@@ -1,0 +1,64 @@
+{
+  "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
+  "title": {
+    "text": "Change in Cancer Cases by Type",
+    "fontSize": 18,
+    "anchor": "start",
+    "offset": 12
+  },
+  "width": 860,
+  "height": 420,
+  "data": { "url": "count_change.csv", "format": { "type": "csv" } },
+
+  "transform": [
+    { "calculate": "trim((datum['Year']||datum['\\uFEFFYear']||datum[' Year']||'')+'')", "as": "Year_str" },
+    { "calculate": "toNumber(datum.Year_str)", "as": "Year_num" },
+
+    { "calculate": "trim((datum['Type']||datum['\\uFEFFType']||datum[' Type']||datum['Cancer type']||datum['Cancer Type']||datum['type']||'')+'')", "as": "Type_clean" },
+
+    {
+      "calculate": "replace((datum['Count']||datum['\\uFEFFCount']||datum[' Count']||datum['Counts']||datum['Number of new cases']||datum['Number of cases']||datum['Value']||'')+'', /[^0-9.\\-]+/g, '')",
+      "as": "Count_str"
+    },
+    { "calculate": "toNumber(datum.Count_str)", "as": "Count_num" },
+
+    { "filter": "datum.Type_clean !== '' && isFinite(datum.Year_num) && isFinite(datum.Count_num)" },
+
+    {
+      "aggregate": [{"op": "sum", "field": "Count_num", "as": "Count_sum"}],
+      "groupby": ["Year_num", "Type_clean"]
+    }
+  ],
+
+  "mark": { "type": "area", "opacity": 0.7, "line": true, "point": true },
+
+  "encoding": {
+    "x": {
+      "field": "Year_num",
+      "type": "quantitative",
+      "title": "Year",
+      "axis": { "format": "d", "labelAngle": 0 }
+    },
+    "y": {
+      "field": "Count_sum",
+      "type": "quantitative",
+      "title": "Number of Cases",
+      "axis": { "format": "," },
+      "stack": "zero"
+    },
+    "color": {
+      "field": "Type_clean",
+      "type": "nominal",
+      "title": "Cancer type",
+      "scale": { "scheme": "tableau10" },
+      "legend": { "columns": 1 }
+    },
+    "tooltip": [
+      { "field": "Year_num", "type": "quantitative", "title": "Year", "format": "d" },
+      { "field": "Type_clean", "type": "nominal", "title": "Type" },
+      { "field": "Count_sum", "type": "quantitative", "title": "Cases", "format": "," }
+    ]
+  },
+
+  "config": { "view": { "stroke": null }, "axis": { "labelFontSize": 11, "titleFontSize": 12 } }
+}
