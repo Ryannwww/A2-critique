@@ -4,7 +4,6 @@
   <meta charset="utf-8" />
   <title>AU Cancer Mortality Choropleth + Top 10 Bar + Bubble + Histogram</title>
   <link href="https://fonts.googleapis.com/css2?family=Alegreya:ital,wght@0,400..900;1,400..900&family=Roboto:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="styles.css">
   <script src="https://cdn.jsdelivr.net/npm/vega@5"></script>
   <script src="https://cdn.jsdelivr.net/npm/vega-lite@5"></script>
   <script src="https://cdn.jsdelivr.net/npm/vega-embed@6"></script>
@@ -13,32 +12,32 @@
     .wrap { max-width: 1100px; margin-inline: auto; }
     .viz { margin: 20px 0 24px; }
     .viz + h2 { margin-top: 72px; }
-      h1 {
-          font-family: "Alegreya", serif;
-          font-size: 42px;
-          font-weight: 700;
-          color: #1a1a1a;
-          text-align: center;
-          margin-top: 10px;
-          margin-bottom: 12px;
-         }
-
-      p.intro {
-          font-size: 18px;
-          line-height: 1.7;
-          color: #444;
-          text-align: center;
-          max-width: 900px;
-          margin-inline: auto;
-          margin-bottom: 40px;
-          }
+    h1 {
+      font-family: "Alegreya", serif;
+      font-size: 42px;
+      font-weight: 700;
+      color: #1a1a1a;
+      text-align: center;
+      margin-top: 10px;
+      margin-bottom: 12px;
+    }
+    p.intro {
+      font-size: 18px;
+      line-height: 1.7;
+      color: #444;
+      text-align: center;
+      max-width: 900px;
+      margin-inline: auto;
+      margin-bottom: 40px;
+    }
     h2 { margin: 0 0 8px; }
   </style>
 </head>
 <body>
   <div class="wrap">
-    <h1>Cancer across Australia<h1>
-    <p class='intro'> Cancer can be detrimental, you can explore facts about cancer down below about types and prevalent cancer types in Australia. <p>
+    <h1>Cancer across Australia</h1>
+    <p class="intro">Cancer can be detrimental, you can explore facts about cancer down below about types and prevalent cancer types in Australia.</p>
+
     <h2>Cancer Mortality (ASR per 100,000) Australia by State</h2>
     <div id="visMap" class="viz"></div>
     <p>Use the slider to compare ASR across years (2010 to 2020). Darker shades indicate higher rates.</p>
@@ -56,6 +55,14 @@
     <h2>Incidence vs Mortality by Cancer Type (Persons, All ages, 2025)</h2>
     <div id="visBubble" class="viz"></div>
     <p>For the top 15 cancers displayed in the bar chart above, this bubble chart illustrates the mortality rate per 100000 against incident rate per 100000. Each bubble is a cancer type. Position shows age-specific incidence vs mortality rate; bubble size shows incident cases.</p>
+
+    <h2>Annual New Cancer Cases (Line)</h2>
+    <div id="visLine" class="viz"></div>
+    <p>Shows the number of new cancer cases each year.</p>
+    <h2>Change in Cancer Cases by Type (Stacked Area)</h2>
+    <div id="visArea" class="viz"></div>
+    <p>Shows how the number of cases has changed over time by cancer type.</p>
+
   </div>
 
   <script>
@@ -161,15 +168,13 @@
         "x": { "field": "cases_num", "type": "quantitative", "title": "Total cases", "scale": {"domainMin": 0}, "axis":{"format": ",", "labelFontSize": 11, "titleFontSize": 12} },
         "tooltip": [
           {"field": "label", "title": "Cancer type"},
-          {"field": "cases_num", "type": "quantitative", "title": "Cases"}
+          {"field": "cases_num", "type": "quantitative", "title": "Cases", "format": ","}
         ]
       },
       "config": { "axis": {"labelFontSize": 11, "titleFontSize": 12}, "title": {"fontSize": 16}, "numberFormat": "," }
     };
 
-
-
-  /*Histogram  */
+    /*Histogram  */
     const histSpec = {
       "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
       "title": "Age-specific Cancer Incidence Rate by Age Group (Persons All cancers combined 2024)",
@@ -198,6 +203,65 @@
         ]
       },
       "config": { "axis": { "labelFontSize": 11, "titleFontSize": 12 }, "title": { "fontSize": 16 }, "view": { "stroke": null } }
+    };
+
+    /*Line chart  */
+    const lineSpec = {
+      "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
+      "title": {"text": "Number of New Cancer Cases in Australia (Line)","fontSize": 18,"anchor": "start","offset": 12},
+      "width": 860, "height": 420,
+      "data": { "url": "case_changing.csv", "format": { "type": "csv" } },
+      "transform": [
+        { "calculate": "trim((datum['Year']||datum['\\uFEFFYear']||datum[' Year']||'')+'')", "as": "Year_str" },
+        { "calculate": "toNumber(datum.Year_str)", "as": "Year_num" },
+        {
+          "calculate": "replace((datum['Number of new cases']||datum['\\uFEFFNumber of new cases']||datum[' Number of new cases']||datum['Cases']||datum['Count']||'')+'', /[^0-9.\\-]+/g, '')",
+          "as": "Cases_str"
+        },
+        { "calculate": "toNumber(datum.Cases_str)", "as": "Cases" },
+        { "filter": "isFinite(datum.Year_num) && isFinite(datum.Cases)" }
+      ],
+      "mark": { "type": "line", "point": true, "strokeWidth": 3, "color": "#1f77b4" },
+      "encoding": {
+        "x": { "field": "Year_num", "type": "quantitative", "title": "Year", "axis": { "format": "d", "labelAngle": 0 } },
+        "y": { "field": "Cases", "type": "quantitative", "title": "Number of New Cases", "axis": { "format": "," } },
+        "tooltip": [
+          { "field": "Year_num", "type": "quantitative", "title": "Year", "format": "d" },
+          { "field": "Cases", "type": "quantitative", "title": "New Cases", "format": "," }
+        ]
+      },
+      "config": { "view": { "stroke": null }, "axis": { "labelFontSize": 11, "titleFontSize": 12 } }
+    };
+
+    /* Stacked area chart */
+    const areaSpec = {
+      "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
+      "title": {"text": "Change in Cancer Cases by Type (Stacked Area)","fontSize": 18,"anchor": "start","offset": 12},
+      "width": 860, "height": 420,
+      "data": { "url": "count_change.csv", "format": { "type": "csv" } },
+      "transform": [
+        { "calculate": "trim((datum['Type']||datum['\\uFEFFType']||datum[' Type']||datum['Cancer type']||datum['Cancer Type']||datum['type']||'')+'')", "as": "Type_clean" },
+        { "calculate": "toNumber(trim((datum['Year']||datum['\\uFEFFYear']||datum[' Year']||'')+''))", "as": "Year_num" },
+        {
+          "calculate": "replace((datum['Count']||datum['\\uFEFFCount']||datum[' Count']||datum['Counts']||datum['Number of new cases']||datum['Number of cases']||datum['Value']||'')+'', /[^0-9.\\-]+/g, '')",
+          "as": "Count_str"
+        },
+        { "calculate": "toNumber(datum.Count_str)", "as": "Count_num" },
+        { "filter": "datum.Type_clean !== '' && isFinite(datum.Year_num) && isFinite(datum.Count_num)" },
+        { "aggregate": [{"op": "sum", "field": "Count_num", "as": "Count_sum"}], "groupby": ["Year_num", "Type_clean"] }
+      ],
+      "mark": { "type": "area", "opacity": 0.7, "line": true, "point": true },
+      "encoding": {
+        "x": { "field": "Year_num", "type": "quantitative", "title": "Year", "axis": { "format": "d", "labelAngle": 0 } },
+        "y": { "field": "Count_sum", "type": "quantitative", "title": "Number of Cases", "axis": { "format": "," }, "stack": "zero" },
+        "color": { "field": "Type_clean", "type": "nominal", "title": "Cancer type", "scale": { "scheme": "tableau10" }, "legend": { "columns": 1 } },
+        "tooltip": [
+          { "field": "Year_num", "type": "quantitative", "title": "Year", "format": "d" },
+          { "field": "Type_clean", "type": "nominal", "title": "Type" },
+          { "field": "Count_sum", "type": "quantitative", "title": "Cases", "format": "," }
+        ]
+      },
+      "config": { "view": { "stroke": null }, "axis": { "labelFontSize": 11, "titleFontSize": 12 } }
     };
 
     /*  Bubble */
@@ -241,12 +305,14 @@
       "config": { "view": { "stroke": null }, "axis": { "grid": true } }
     };
 
-    
+    /* Embed all */
+    vegaEmbed("#visMap", mapSpec).catch(console.error);
+    vegaEmbed("#visBar", barSpec).catch(console.error);
+    vegaEmbed("#visHist", histSpec).catch(console.error);
+    vegaEmbed("#visBubble", bubbleSpec).catch(console.error);
+    vegaEmbed("#visLine", lineSpec).catch(console.error);
+    vegaEmbed("#visArea", areaSpec).catch(console.error);
 
-    vegaEmbed("#visMap", mapSpec, {mode: "vega-lite"}).catch(console.error);
-    vegaEmbed("#visBar", barSpec, {mode: "vega-lite"}).catch(console.error);
-    vegaEmbed("#visHist", histSpec, {mode: "vega-lite"}).catch(console.error);
-    vegaEmbed("#visBubble", bubbleSpec, {mode: "vega-lite"}).catch(console.error);
   </script>
 </body>
 </html>
