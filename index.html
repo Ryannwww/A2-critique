@@ -3,15 +3,41 @@
 <head>
   <meta charset="utf-8" />
   <title>AU Cancer Mortality Choropleth + Top 10 Bar + Bubble + Histogram</title>
+
   <link href="https://fonts.googleapis.com/css2?family=Alegreya:ital,wght@0,400..900;1,400..900&family=Roboto:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
+
   <script src="https://cdn.jsdelivr.net/npm/vega@5"></script>
   <script src="https://cdn.jsdelivr.net/npm/vega-lite@5"></script>
   <script src="https://cdn.jsdelivr.net/npm/vega-embed@6"></script>
+
   <style>
-    body { font-family: system-ui, Arial, sans-serif; margin: 24px; }
-    .wrap { max-width: 1100px; margin-inline: auto; }
-    .viz { margin: 20px 0 24px; }
-    .viz + h2 { margin-top: 72px; }
+    body {
+      font-family: system-ui, Arial, sans-serif;
+      margin: 24px;
+      background: #f7f8fa;
+    }
+
+    .wrap {
+      max-width: 1150px;
+      margin-inline: auto;
+    }
+
+    .dashboard {
+      background: #fff;
+      border: 1px solid #e9e9e9;
+      border-radius: 16px;
+      padding: 28px 32px;
+      box-shadow: 0 6px 24px rgba(0, 0, 0, 0.06);
+    }
+
+    .viz {
+      margin: 20px 0 24px;
+    }
+
+    .viz + h2 {
+      margin-top: 72px;
+    }
+
     h1 {
       font-family: "Alegreya", serif;
       font-size: 42px;
@@ -19,8 +45,11 @@
       color: #1a1a1a;
       text-align: center;
       margin-top: 10px;
-      margin-bottom: 12px;
+      margin-bottom: 16px;
+      padding-bottom: 10px;
+      border-bottom: 1px solid #eee;
     }
+
     p.intro {
       font-size: 18px;
       line-height: 1.7;
@@ -30,52 +59,80 @@
       margin-inline: auto;
       margin-bottom: 40px;
     }
-    h2 { margin: 0 0 8px; }
+
+    h2 {
+      margin: 0 0 8px;
+      font-family: "Alegreya", serif;
+      font-weight: 600;
+      font-size: 26px;
+      color: #1a1a1a;
+    }
+
+    .viz + p {
+      font-size: 17px;
+      line-height: 1.6;
+      color: #444;
+      margin-top: 8px;
+      margin-bottom: 32px;
+      text-align: left;
+    }
   </style>
 </head>
+
 <body>
   <div class="wrap">
-    <h1>Cancer across Australia</h1>
-    <p class="intro">Cancer can be detrimental, you can explore facts about cancer down below about types and prevalent cancer types in Australia.</p>
+    <div class="dashboard">
+      <h1>Cancer across Australia</h1>
+      <p class="intro">
+        Cancer can be detrimental; explore the facts below about cancer types and prevalence in Australia.
+      </p>
 
-    <h2>Cancer Mortality (ASR per 100,000) Australia by State</h2>
-    <div id="visMap" class="viz"></div>
-    <p>Use the slider to compare ASR across years (2010 to 2020). Darker shades indicate higher rates.</p>
-    <p>ASR is age-standardised to the 2024 Australian population, per 100,000.</p>
+      <h2>Cancer Mortality (ASR per 100,000) Australia by State</h2>
+      <div id="visMap" class="viz"></div>
+      <p>Use the slider to compare ASR across years (2010 to 2020). Darker shades indicate higher rates.</p>
+      <p>ASR is age-standardised to the 2024 Australian population, per 100,000.</p>
 
-    <h2>Top 15 Cancer Types by Incidence</h2>
-    <div id="visBar" class="viz"></div>
-    <p>Use the slider to increase the total number of cases, to see the difference in cases between cancer types</p>
-    <p>Prostate cancer has the most confirmed cases in the year 2021 followed by breast cancer</p>
+      <h2>Top 15 Cancer Types by Incidence</h2>
+      <div id="visBar" class="viz"></div>
+      <p>Use the slider to adjust the total number of cases and see the variation between cancer types.</p>
+      <p>Prostate cancer has the most confirmed cases in 2021, followed by breast cancer.</p>
 
-    <h2>Age-specific Cancer Incidence Rate by Age Group (Persons All cancers combined 2024)</h2>
-    <div id="visHist" class="viz"></div>
-    <p>Bars show the incidence rate per 100,000 for each age group.</p>
+      <h2>Age-specific Cancer Incidence Rate by Age Group (Persons All cancers combined 2024)</h2>
+      <div id="visHist" class="viz"></div>
+      <p>Bars show the incidence rate per 100,000 for each age group.</p>
 
-    <h2>Incidence vs Mortality by Cancer Type (Persons, All ages, 2025)</h2>
-    <div id="visBubble" class="viz"></div>
-    <p>For the top 15 cancers displayed in the bar chart above, this bubble chart illustrates the mortality rate per 100000 against incident rate per 100000. Each bubble is a cancer type. Position shows age-specific incidence vs mortality rate; bubble size shows incident cases.</p>
+      <h2>Incidence vs Mortality by Cancer Type (Persons, All ages, 2025)</h2>
+      <div id="visBubble" class="viz"></div>
+      <p>
+        For the top 15 cancers displayed above, this bubble chart illustrates mortality versus incidence.
+        Each bubble represents a cancer type; size shows the number of incident cases.
+      </p>
 
-    <h2>Annual New Cancer Cases (Line)</h2>
-    <div id="visLine" class="viz"></div>
-    <p>Shows the number of new cancer cases each year.</p>
-    <h2>Change in Cancer Cases by Type (Stacked Area)</h2>
-    <div id="visArea" class="viz"></div>
-    <p>Shows how the number of cases has changed over time by cancer type.</p>
+      <h2>Annual New Cancer Cases (Line)</h2>
+      <div id="visLine" class="viz"></div>
+      <p>Shows the number of new cancer cases recorded each year.</p>
 
+      <h2>Change in Cancer Cases by Type (Stacked Area)</h2>
+      <div id="visArea" class="viz"></div>
+      <p>Displays how the number of cases has changed over time by cancer type.</p>
+
+      <h2>The Top Cause of Cancer As Percentage</h2>
+      <div id="visPie" class="viz"></div>
+      <p>
+        Shows the proportion of factors that likely cause cancer.
+      </p>
+    </div>
   </div>
 
   <script>
     /*  Choropleth */
     const mapSpec = {
       "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
-      "title": {"text": "Cancer Mortality in Australia by State"},
+      "title": {"text": "Cancer Mortality in Australia by State in 2020"},
       "width": 860,
       "height": 520,
       "projection": {"type": "equalEarth"},
-      "params": [
-        {"name": "yearSelected","value": 2020,"bind": {"input": "range","min": 2010,"max": 2020,"step": 1,"name": "Year: "}}
-      ],
+      
       "layer": [
         {
           "data": {
@@ -111,7 +168,7 @@
               "calculate": "datum['Age-standardised rate\\n2024 Australian population \\n(per 100,000']",
               "as": "asr_persons"
             },
-            { "filter": "datum.year_num == yearSelected" }
+            { "filter": "datum.year_num == 2020" }  
           ],
           "mark": { "type": "geoshape", "stroke": "white", "strokeWidth": 1, "strokeOpacity": 1 },
           "encoding": {
@@ -124,7 +181,7 @@
                 "domain": [180, 190, 200, 210, 220, 230, 260],
                 "range": ["#fdbe85", "#fd8d3c", "#e6550d", "#a63603"]
               },
-              "legend": { "title": "Age-standardised rate(per 100,000)", "titleFontSize": 10, "labelFontSize": 8 }
+              "legend": { "title": "Age-standardised rate (per 100,000)", "titleFontSize": 10, "labelFontSize": 8 }
             },
             "tooltip": [
               {"field": "properties.STE_NAME21", "type": "nominal", "title": "State/Territory"},
@@ -136,6 +193,7 @@
         }
       ]
     };
+
 
     /*Top 15 Bar  */
     const barSpec = {
@@ -150,7 +208,7 @@
       "params": [
         {
           "name": "MinCases","value": 0,
-          "bind": {"input": "range","min": 0,"max": 30000,"step": 1000,"name": "Minimum cases: "}
+          "bind": {"input": "range","min": 0,"max": 26000,"step": 1000,"name": "Minimum cases: "}
         }
       ],
       "transform": [
@@ -165,13 +223,13 @@
       "mark": "bar",
       "encoding": {
         "y": { "field": "label", "type": "nominal", "title": "Cancer type", "sort": "-x" },
-        "x": { "field": "cases_num", "type": "quantitative", "title": "Total cases", "scale": {"domainMin": 0}, "axis":{"format": ",", "labelFontSize": 11, "titleFontSize": 12} },
+        "x": { "field": "cases_num", "type": "quantitative", "title": "Total cases", "scale": {"domainMin": 0} },
         "tooltip": [
           {"field": "label", "title": "Cancer type"},
           {"field": "cases_num", "type": "quantitative", "title": "Cases", "format": ","}
         ]
       },
-      "config": { "axis": {"labelFontSize": 11, "titleFontSize": 12}, "title": {"fontSize": 16}, "numberFormat": "," }
+      "config": { "axis": {"labelFontSize": 12, "titleFontSize": 12}, "title": {"fontSize": 16}, "numberFormat": "," }
     };
 
     /*Histogram  */
@@ -202,7 +260,7 @@
           { "field": "Count_num", "type": "quantitative", "title": "Count" }
         ]
       },
-      "config": { "axis": { "labelFontSize": 11, "titleFontSize": 12 }, "title": { "fontSize": 16 }, "view": { "stroke": null } }
+      "config": { "axis": { "labelFontSize": 12, "titleFontSize": 12 }, "title": { "fontSize": 16 }, "view": { "stroke": null } }
     };
 
     /*Line chart  */
@@ -224,13 +282,13 @@
       "mark": { "type": "line", "point": true, "strokeWidth": 3, "color": "#1f77b4" },
       "encoding": {
         "x": { "field": "Year_num", "type": "quantitative", "title": "Year", "axis": { "format": "d", "labelAngle": 0 } },
-        "y": { "field": "Cases", "type": "quantitative", "title": "Number of New Cases", "axis": { "format": "," } },
+        "y": { "field": "Cases", "type": "quantitative", "title": "Number of New Cases", "axis": { "format": "," }, "scale": {"domain" : [80000, 160000]} },
         "tooltip": [
           { "field": "Year_num", "type": "quantitative", "title": "Year", "format": "d" },
           { "field": "Cases", "type": "quantitative", "title": "New Cases", "format": "," }
         ]
       },
-      "config": { "view": { "stroke": null }, "axis": { "labelFontSize": 11, "titleFontSize": 12 } }
+      "config": { "axis": { "labelFontSize": 12, "titleFontSize": 12 }, "title": { "fontSize": 16 }, "view": { "stroke": null } }
     };
 
     /* Stacked area chart */
@@ -261,8 +319,9 @@
           { "field": "Count_sum", "type": "quantitative", "title": "Cases", "format": "," }
         ]
       },
-      "config": { "view": { "stroke": null }, "axis": { "labelFontSize": 11, "titleFontSize": 12 } }
+      "config": { "axis": { "labelFontSize": 12, "titleFontSize": 12 }, "title": { "fontSize": 16 }, "view": { "stroke": null } }
     };
+;
 
     /*  Bubble */
     const bubbleSpec = {
@@ -292,7 +351,7 @@
       "encoding": {
         "x": { "field": "inc_rate", "type": "quantitative", "title": "Age-specific incidence rate (per 100,000)", "scale": {"nice": true} },
         "y": { "field": "mort_rate", "type": "quantitative", "title": "Age-specific mortality rate (per 100,000)", "scale": {"nice": true} },
-        "size": { "field": "incidents", "type": "quantitative", "title": "Incident cases", "legend": { "orient": "right" }, "scale": {"type": "threshold","domain": [500, 1000, 2000, 5000, 10000, 15000, 20000, 25000, 30000],"range": [10, 50, 150, 200, 300, 400, 450, 500, 550]} },
+        "size": { "field": "incidents", "type": "quantitative", "title": "Incident cases", "legend": { "orient": "right" }, "scale": {"type": "threshold","domain": [500, 1000, 2000, 5000, 10000, 15000, 20000],"range": [10, 50, 150, 200, 300, 400]} },
         "color": { "field": "Cancer", "type": "nominal", "title": "Cancer type" },
         "tooltip": [
           { "field": "Cancer", "type": "nominal", "title": "Cancer" },
@@ -302,8 +361,43 @@
           { "field": "mort_rate", "type": "quantitative", "title": "Mortality rate" }
         ]
       },
-      "config": { "view": { "stroke": null }, "axis": { "grid": true } }
+      "config": { "axis": { "labelFontSize": 12, "titleFontSize": 12 }, "title": { "fontSize": 16 }, "view": { "stroke": null } }
     };
+
+
+    /*  pie */
+    const pieSpec = {
+      "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
+      "title": {"text": "What Causes Cancer? Share of Attributable Cases", "fontSize": 18, "anchor": "start", "offset": 12},
+      "width": 520,
+      "height": 520,
+      "data": {"url": "cancer_causes.csv", "format": {"type": "csv"}},
+
+      "transform": [
+        { "calculate": "trim((datum['Causes']||datum['\\uFEFFCauses']||datum[' Causes']||datum['Cause']||'')+'')", "as": "cause" },
+        { "calculate": "replace((datum['Contribute']||datum['\\uFEFFContribute']||datum[' Contribute']||datum['Percent']||datum['Value']||'')+'', /[^0-9.]+/g, '')", "as": "val_str" },
+        { "calculate": "toNumber(datum.val_str)", "as": "value" },
+        { "filter": "datum.cause !== '' && isFinite(datum.value)" },
+        { "joinaggregate": [{"op": "sum", "field": "value", "as": "total"}] },
+        { "calculate": "round(datum.value / datum.total * 100)", "as": "pct" }
+      ],
+
+      "mark": {"type": "arc", "outerRadius": 250, "innerRadius": 100, "tooltip": true, "stroke": "white", "strokeWidth": 1.5},
+      "encoding": {
+        "theta": {"field": "value", "type": "quantitative", "stack": "normalize"},
+        "color": {"field": "cause", "type": "nominal", "title": "Cause", "scale": {"scheme": "tableau10"}},
+        "tooltip": [
+          {"field": "cause", "title": "Cause"},
+          {"field": "pct", "type": "quantitative", "title": "Share (%)", "format": ".0f"}
+        ]
+      },
+
+      "config": { "axis": { "labelFontSize": 12, "titleFontSize": 12 }, "title": { "fontSize": 16 }, "view": { "stroke": null } }
+    };
+
+
+
+
 
     /* Embed all */
     vegaEmbed("#visMap", mapSpec).catch(console.error);
@@ -312,6 +406,7 @@
     vegaEmbed("#visBubble", bubbleSpec).catch(console.error);
     vegaEmbed("#visLine", lineSpec).catch(console.error);
     vegaEmbed("#visArea", areaSpec).catch(console.error);
+    vegaEmbed("#visPie", pieSpec).catch(console.error);
 
   </script>
 </body>
