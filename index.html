@@ -329,6 +329,27 @@
       "title": {"text": "Incidence vs Mortality by Cancer Type (Persons, All ages, 2025)"},
       "width": 860, "height": 520,
       "data": { "url": "incident_to_mortality.csv" },
+
+      "params": [
+        {
+          "name": "Cancer_Selection",
+          "bind": {
+            "input": "select",
+            "name": "Cancer Type: ",
+            "options": [
+              null,
+              "Prostate cancer", "Breast cancer", "Melanoma of the skin", "Lung cancer", "Colon cancer",
+              "Kidney cancer", "Pancreatic cancer", "Thyroid cancer", "Colorectal cancer", "Hodgkin lymphoma", "Uterine cancer", "Bladder cancer", "Stomach cancer", "Unknown primary site (cancer of)", "Liver cancer"
+            ],
+            "labels": [
+              "Show All",
+              "Prostate cancer", "Breast cancer", "Melanoma of the skin", "Lung cancer", "Colon cancer",
+              "Kidney cancer", "Pancreatic cancer", "Thyroid cancer", "Colorectal cancer", "Hodgkin lymphoma", "Uterine cancer", "Bladder cancer", "Stomach cancer", "Unknown primary site (cancer of)", "Liver cancer"
+            ],
+            "name": "Cancer Selection"
+          }
+        }
+      ],
       "transform": [
         { "calculate": "toNumber(datum.Year)", "as": "Year_num" },
         { "filter": "datum.Year_num == 2025" },
@@ -345,6 +366,7 @@
         { "calculate": "toNumber(replace(datum['Mortality_counts'], ',', ''))", "as": "deaths" },
         { "calculate": "toNumber(datum['Age-specific incident rate\\n(cases per 100,000)'])", "as": "inc_rate" },
         { "calculate": "toNumber(datum['Age-specific mortality rate\\n(cases per 100,000)'])", "as": "mort_rate" },
+        { "filter": "(Cancer_Selection == null || datum.Cancer == Cancer_Selection)" },
         { "filter": "isValid(datum.inc_rate) && isValid(datum.mort_rate) && datum.Cancer !== ''" }
       ],
       "mark": { "type": "circle", "opacity": 0.8, "tooltip": true },
