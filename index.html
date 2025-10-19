@@ -112,7 +112,7 @@
       <div id="visLine" class="viz"></div>
       <p>Shows the number of new cancer cases recorded each year.</p>
 
-      <h2>Change in Cancer Cases by Type (Stacked Area)</h2>
+      <h2>Change in Cancer Cases by Type (Area chart)</h2>
       <div id="visArea" class="viz"></div>
       <p>Displays how the number of cases has changed over time by the top 4 cancer type.</p>
 
@@ -294,7 +294,7 @@
     /* Stacked area chart */
     const areaSpec = {
       "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
-      "title": {"text": "Change in Cancer Cases by Type (Area chart)","fontSize": 18,"anchor": "start","offset": 12},
+      "title": {"text": "Change in Cancer Cases by Type ","fontSize": 18,"anchor": "start","offset": 12},
       "width": 860, "height": 420,
       "data": { "url": "count_change.csv", "format": { "type": "csv" } },
       "transform": [
@@ -329,6 +329,15 @@
       "title": {"text": "Incidence vs Mortality by Cancer Type (Persons, All ages, 2025)"},
       "width": 860, "height": 520,
       "data": { "url": "incident_to_mortality.csv" },
+
+
+      "selection": {
+        "continent_highlight": {
+          "type": "multi",
+          "fields": ["Cancer"],
+          "bind": "legend"
+        }
+      },
 
       "params": [
         {
@@ -373,8 +382,12 @@
       "encoding": {
         "x": { "field": "inc_rate", "type": "quantitative", "title": "Age-specific incidence rate (per 100,000)", "scale": {"nice": true} },
         "y": { "field": "mort_rate", "type": "quantitative", "title": "Age-specific mortality rate (per 100,000)", "scale": {"nice": true} },
-        "size": { "field": "incidents", "type": "quantitative", "title": "Incident cases", "legend": { "orient": "right" }, "scale": {"type": "threshold","domain": [500, 1000, 2000, 5000, 10000, 15000, 20000],"range": [10, 50, 150, 200, 300, 400]} },
+        "size": { "field": "incidents", "type": "quantitative", "title": "Incident cases", "legend": { "orient": "right" }, "scale": {"type": "threshold","domain": [500, 1000, 2000, 5000, 10000, 15000, 20000],"range": [10, 50, 150, 200, 300, 400, 500]} },
         "color": { "field": "Cancer", "type": "nominal", "title": "Cancer type" },
+        "opacity": {
+          "condition": { "selection": "continent_highlight", "value": 0.9 },
+          "value": 0.2
+        },
         "tooltip": [
           { "field": "Cancer", "type": "nominal", "title": "Cancer" },
           { "field": "incidents", "type": "quantitative", "title": "Incidents" },
